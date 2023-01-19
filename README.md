@@ -26,27 +26,30 @@ await app.ready()
 It's also possible to specify a JSON Web Key Set (JWKS) URI to retrieve the public keys from a remote server.
 
 ```js
-    "jwt": {
-      "jwks": {
-        "allowedDomains": [
-          "https://ISSUER_DOMAIN"
-        ]
-      }
+{
+  jwt: {
+    jwks: {
+      allowedDomains: [
+        "https://ISSUER_DOMAIN"
+      ]
+    }
+  }
+}
 ```
 
 Any option supported by the [get-jwks](https://github.com/nearform/get-jwks) library can be specified in the `jwt.jwks` object.
 
 ### namespace
 The JWT namespace option is used to specify the namespace for custom claims used to populate `request.user`. For more info about this see [OIDC Specification](https://openid.net/specs/openid-connect-core-1_0.html). 
-Since these namespace are URLs, we might remove it. If the `namespace` is specified it will be removed automatically:
+Since these namespace are URLs, we might want to remove it. If the `namespace` is specified it will be removed automatically:
 
 ```js
-  {
-    jwt: {
-      jwks: true,
-      namespace: "https://test.com/" 
-    }
-  })
+{
+  jwt: {
+    jwks: true,
+    namespace: "https://test.com/" 
+  }
+}
 ```
 In this case, if the token contains a claim `https://test.com/email`, the plugin will strip the namespace from the claim and populate `request.user.email` with its value.
 
@@ -59,12 +62,14 @@ When a request is received, fastify-user sends a POST to the webhook, replicatin
 
 The webhook is expected to return a JSON object with the user information. The plugin will populate `request.user` with the response body.
 
-Example of configuration:
+Example of options:
 
 ```js
-    webhook: {
-      url: `http://my-webhook-url/authorize`
-    }
+{
+  webhook: {
+    url: `http://my-webhook-url/authorize`
+  }
+}
 ```
 
 ## JWT and Webhook
