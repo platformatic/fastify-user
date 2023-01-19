@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "fastify-user",
+  "version": "0.0.1",
+  "description": "Fastify plugin to extract user",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard | snazzy && c8 --100 tap --no-coverage  test/*test.js",
+    "lint": "standard"
+  },
+  "keywords": [
+    "fastify",
+    "user",
+    "plugin",
+    "jwt",
+    "webhook"
+  ],
+  "author": "Marco Piraccini <marco.piraccini@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/error": "^3.2.0",
+    "@fastify/jwt": "^6.5.0",
+    "fastify": "^4.11.0",
+    "fastify-plugin": "^4.4.0",
+    "get-jwks": "^8.0.3"
+  },
+  "devDependencies": {
+    "@fastify/cookie": "^8.3.0",
+    "@fastify/session": "^10.1.1",
+    "c8": "^7.12.0",
+    "dockerode": "^3.3.4",
+    "fast-jwt": "^2.1.0",
+    "snazzy": "^9.0.0",
+    "standard": "^17.0.0",
+    "tap": "^16.3.3",
+    "undici": "^5.14.0"
+  }
+}
