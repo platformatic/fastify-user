@@ -159,3 +159,25 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
   })
   end()
 })
+
+test('if no webhook conf is set, no user is added', async ({ same, teardown }) => {
+  const app = fastify()
+
+  teardown(app.close.bind(app))
+
+  app.register(fastifyUser, {})
+
+  app.get('/', async function (request, reply) {
+    return request.user || {}
+  })
+
+  await app.ready()
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/'
+  })
+
+  same(response.statusCode, 200)
+  same(response.json(), {})
+})

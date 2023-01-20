@@ -180,149 +180,119 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
   }
 })
 
-// test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, equal }) => {
-//   const authorizer = await buildAuthorizerAPIToken({
-//     async onAuthorize (request) {
-//       equal(request.headers.authorization, 'Bearer foobar')
-//       const payload = {
-//         'X-PLATFORMATIC-USER-ID': 42,
-//         'X-PLATFORMATIC-ROLE': 'user'
-//       }
+async function buildAuthorizerAPIToken (opts = {}) {
+  const app = fastify({
+    forceCloseConnections: true
+  })
 
-//       return payload
-//     }
-//   })
-//   teardown(() => authorizer.close())
+  app.post('/authorize', async (request, reply) => {
+    return await opts.onAuthorize(request)
+  })
 
-//   const { n, e, kty } = jwtPublicKey
-//   const kid = 'TEST-KID'
-//   const alg = 'RS256'
-//   const jwksEndpoint = await buildJwksEndpoint(
-//     {
-//       keys: [
-//         {
-//           alg,
-//           kty,
-//           n,
-//           e,
-//           use: 'sig',
-//           kid
-//         }
-//       ]
-//     }
-//   )
-//   teardown(() => jwksEndpoint.close())
+  await app.listen({ port: 0 })
+  return app
+}
 
-//   const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
-//   const header = {
-//     kid,
-//     alg,
-//     typ: 'JWT'
-//   }
-//   const app = fastify({
-//     forceCloseConnections: true
-//   })
-//   app.register(core, {
-//     ...connInfo,
-//     async onDatabaseLoad (db, sql) {
-//       pass('onDatabaseLoad called')
+test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, equal }) => {
+  const authorizer = await buildAuthorizerAPIToken({
+    async onAuthorize (request) {
+      equal(request.headers.authorization, 'Bearer foobar')
+      const payload = {
+        'USER-ID': 42
+      }
 
-//       await clear(db, sql)
-//       await createBasicPages(db, sql)
-//     }
-//   })
-//   app.register(auth, {
-//     webhook: {
-//       url: `http://localhost:${authorizer.server.address().port}/authorize`
-//     },
-//     jwt: {
-//       jwks: true
-//     },
-//     roleKey: 'X-PLATFORMATIC-ROLE',
-//     anonymousRole: 'anonymous',
-//     rules: [{
-//       role: 'user',
-//       entity: 'page',
-//       find: true,
-//       delete: false,
-//       defaults: {
-//         userId: 'X-PLATFORMATIC-USER-ID'
-//       },
-//       save: {
-//         checks: {
-//           userId: 'X-PLATFORMATIC-USER-ID'
-//         }
-//       }
-//     }, {
-//       role: 'anonymous',
-//       entity: 'page',
-//       find: false,
-//       delete: false,
-//       save: false
-//     }]
-//   })
-//   teardown(app.close.bind(app))
-//   teardown(() => authorizer.close())
+      return payload
+    }
+  })
+  teardown(() => authorizer.close())
 
-//   await app.ready()
+  const { n, e, kty } = jwtPublicKey
+  const kid = 'TEST-KID'
+  const alg = 'RS256'
+  const jwksEndpoint = await buildJwksEndpoint(
+    {
+      keys: [
+        {
+          alg,
+          kty,
+          n,
+          e,
+          use: 'sig',
+          kid
+        }
+      ]
+    }
+  )
+  teardown(() => jwksEndpoint.close())
 
-//   {
-//     const res = await app.inject({
-//       method: 'POST',
-//       url: '/graphql',
-//       headers: {
-//         Authorization: 'Bearer foobar'
-//       },
-//       body: {
-//         query: `
-//           mutation {
-//             savePage(input: { title: "Hello" }) {
-//               id
-//               title
-//               userId
-//             }
-//           }
-//         `
-//       }
-//     })
-//     equal(res.statusCode, 200, 'savePage status code')
-//     same(res.json(), {
-//       data: {
-//         savePage: {
-//           id: 1,
-//           title: 'Hello',
-//           userId: 42
-//         }
-//       }
-//     }, 'savePage response')
-//   }
+  const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
+  const header = {
+    kid,
+    alg,
+    typ: 'JWT'
+  }
+  const app = fastify({
+    forceCloseConnections: true
+  })
 
-//   {
-//     const signSync = createSigner({
-//       algorithm: 'RS256',
-//       key: privateKey,
-//       header,
-//       iss: issuer,
-//       kid
-//     })
-//     const payload = {
-//       'X-PLATFORMATIC-USER-ID': 42,
-//       'X-PLATFORMATIC-ROLE': ['user']
-//     }
-//     const token = signSync(payload)
+  app.register(fastifyUser, {
+    webhook: {
+      url: `http://localhost:${authorizer.server.address().port}/authorize`
+    },
+    jwt: {
+      jwks: true
+    },
+    roleKey: 'X-PLATFORMATIC-ROLE',
+    anonymousRole: 'anonymous'
+  })
 
-//     const res = await app.inject({
-//       method: 'GET',
-//       url: '/pages/1',
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     })
-//     equal(res.statusCode, 200, 'pages status code')
-//     same(res.json(), {
-//       id: 1,
-//       title: 'Hello',
-//       userId: 42
-//     })
-//   }
-// })
+  app.get('/', async function (request, reply) {
+    return request.user
+  })
+
+  teardown(app.close.bind(app))
+  teardown(() => authorizer.close())
+  teardown(() => jwksEndpoint.close())
+
+  await app.ready()
+
+  {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/',
+      headers: {
+        Authorization: 'Bearer foobar'
+      }
+    })
+    equal(res.statusCode, 200)
+    same(res.json(), {
+      'USER-ID': 42
+    })
+  }
+
+  {
+    const signSync = createSigner({
+      algorithm: 'RS256',
+      key: privateKey,
+      header,
+      iss: issuer,
+      kid
+    })
+    const payload = {
+      'USER-ID': 43
+    }
+    const token = signSync(payload)
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    equal(res.statusCode, 200)
+    same(res.json(), {
+      'USER-ID': 43
+    })
+  }
+})

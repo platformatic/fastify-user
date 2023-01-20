@@ -408,3 +408,25 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     'USER-ID': 42
   })
 })
+
+test('if no jwt conf is set, no user is added', async ({ same, teardown }) => {
+  const app = fastify()
+
+  teardown(app.close.bind(app))
+
+  app.register(fastifyUser, {})
+
+  app.get('/', async function (request, reply) {
+    return request.user || {}
+  })
+
+  await app.ready()
+
+  const response = await app.inject({
+    method: 'GET',
+    url: '/'
+  })
+
+  same(response.statusCode, 200)
+  same(response.json(), {})
+})
