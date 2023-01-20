@@ -54,6 +54,10 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -137,8 +141,12 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
-    return request.user
+    return request.user || {}
   })
 
   teardown(app.close.bind(app))
@@ -150,13 +158,8 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
     method: 'GET',
     url: '/'
   })
-  equal(res.statusCode, 401)
-  same(res.json(), {
-    statusCode: 401,
-    code: 'UNAUTHORIZED',
-    error: 'Unauthorized',
-    message: 'operation not allowed'
-  })
+  equal(res.statusCode, 200)
+  same(res.json(), {})
   end()
 })
 
@@ -166,6 +169,10 @@ test('if no webhook conf is set, no user is added', async ({ same, teardown }) =
   teardown(app.close.bind(app))
 
   app.register(fastifyUser, {})
+
+  app.addHook('preHandler', async (request, reply) => {
+    request.extractUser()
+  })
 
   app.get('/', async function (request, reply) {
     return request.user || {}

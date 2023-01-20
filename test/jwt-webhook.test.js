@@ -109,6 +109,10 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -244,6 +248,10 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
     },
     roleKey: 'X-PLATFORMATIC-ROLE',
     anonymousRole: 'anonymous'
+  })
+
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
   })
 
   app.get('/', async function (request, reply) {
