@@ -54,6 +54,7 @@ async function fastifyUser (app, options, done) {
         request.log.error({ err })
       }
     }
+    return request.user
   }
 
   app.decorateRequest('extractUser', extractUser)
