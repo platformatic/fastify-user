@@ -42,7 +42,8 @@ async function fastifyUser (app, options, done) {
     })
   }
 
-  app.addHook('preHandler', async function (request, reply) {
+  const extractUser = async function () {
+    const request = this
     if (typeof request.createSession === 'function') {
       try {
       // `createSession` actually exists only if jwt or webhook are enabled
@@ -51,10 +52,12 @@ async function fastifyUser (app, options, done) {
         request.log.debug({ user: request.user }, 'logged user in')
       } catch (err) {
         request.log.error({ err })
-        throw err
       }
     }
-  })
+    return request.user
+  }
+
+  app.decorateRequest('extractUser', extractUser)
 
   done()
 }

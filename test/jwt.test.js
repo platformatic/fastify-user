@@ -40,6 +40,10 @@ test('JWT verify OK using shared secret', async ({ same, teardown }) => {
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -101,6 +105,10 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -130,7 +138,7 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
   })
 })
 
-test('jwt verify fails if getting public key from jwks endpoint fails', async ({ pass, teardown, same, equal }) => {
+test('jwt verify fails if getting public key from jwks endpoint fails, so no user is added', async ({ pass, teardown, same, equal }) => {
   const kid = 'TEST-KID'
   const alg = 'RS256'
   // This fails
@@ -158,6 +166,10 @@ test('jwt verify fails if getting public key from jwks endpoint fails', async ({
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -180,15 +192,9 @@ test('jwt verify fails if getting public key from jwks endpoint fails', async ({
       Authorization: `Bearer ${token}`
     }
   })
-  // 500 is correct because the JWKS endpoint is failing
-  // so we cannot verify the token
-  equal(res.statusCode, 500)
-  same(res.json(), {
-    statusCode: 500,
-    code: 'JWKS_REQUEST_FAILED',
-    error: 'Internal Server Error',
-    message: 'JWKS request failed'
-  })
+
+  equal(res.statusCode, 200)
+  same(res.json(), null)
 })
 
 test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, teardown, same, equal }) => {
@@ -229,6 +235,10 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -255,13 +265,8 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     }
   })
 
-  equal(res.statusCode, 500)
-  same(res.json(), {
-    statusCode: 500,
-    code: 'JWK_NOT_FOUND',
-    error: 'Internal Server Error',
-    message: 'No matching JWK found in the set.'
-  })
+  equal(res.statusCode, 200)
+  same(res.json(), null)
 })
 
 test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, same, equal }) => {
@@ -304,6 +309,10 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -330,13 +339,8 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     }
   })
 
-  equal(res.statusCode, 500)
-  same(res.json(), {
-    statusCode: 500,
-    code: 'DOMAIN_NOT_ALLOWED',
-    error: 'Internal Server Error',
-    message: 'The domain is not allowed.'
-  })
+  equal(res.statusCode, 200)
+  same(res.json(), null)
 })
 
 test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equal }) => {
@@ -377,6 +381,10 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     }
   })
 
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
   app.get('/', async function (request, reply) {
     return request.user
   })
@@ -415,6 +423,10 @@ test('if no jwt conf is set, no user is added', async ({ same, teardown }) => {
   teardown(app.close.bind(app))
 
   app.register(fastifyUser, {})
+
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
 
   app.get('/', async function (request, reply) {
     return request.user || {}
