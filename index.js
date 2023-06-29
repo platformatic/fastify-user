@@ -12,10 +12,10 @@ async function fastifyUser (app, options, done) {
   const {
     webhook,
     jwt,
-    customStrategies
+    authStrategies
   } = options
 
-  const strategies = customStrategies || []
+  const strategies = []
 
   if (jwt) {
     await app.register(require('./lib/jwt'), { jwt })
@@ -32,6 +32,14 @@ async function fastifyUser (app, options, done) {
       createSession: (req) => req.createWebhookSession()
     })
   }
+
+  for (const strategy of authStrategies || []) {
+    strategies.push(strategy)
+  }
+
+  app.decorate('addAuthStrategy', (strategy) => {
+    strategies.push(strategy)
+  })
 
   app.decorateRequest('createSession', async function () {
     const errors = []

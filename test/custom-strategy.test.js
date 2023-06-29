@@ -13,13 +13,13 @@ const agent = new Agent({
 })
 setGlobalDispatcher(agent)
 
-test('custom strategy', async ({ teardown, strictSame, equal }) => {
+test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
   const app = fastify({
     forceCloseConnections: true
   })
 
   app.register(fastifyUser, {
-    customStrategies: [{
+    authStrategies: [{
       name: 'myStrategy',
       createSession: async function (req) {
         req.user = { id: 42, role: 'user' }
@@ -52,7 +52,7 @@ test('multiple custom strategies', async ({ teardown, strictSame, equal }) => {
   })
 
   app.register(fastifyUser, {
-    customStrategies: [
+    authStrategies: [
       {
         name: 'myStrategy1',
         createSession: function () {
@@ -99,7 +99,7 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
     webhook: {
       url: `http://localhost:${authorizer.server.address().port}/authorize`
     },
-    customStrategies: [
+    authStrategies: [
       {
         name: 'myStrategy1',
         createSession: function (req) {
@@ -152,6 +152,39 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
         'x-custom-auth': 'true'
       }
     })
+    equal(res.statusCode, 200)
+    strictSame(res.json(), { id: 42, role: 'user' })
+  }
+})
+
+test('add custom strategy via addCustomStrategy hook', async ({ teardown, strictSame, equal }) => {
+  const app = fastify({
+    forceCloseConnections: true
+  })
+
+  await app.register(fastifyUser)
+
+  app.addAuthStrategy({
+    name: 'myStrategy',
+    createSession: async function (req) {
+      req.user = { id: 42, role: 'user' }
+    }
+  })
+
+  app.addHook('preHandler', async (request, reply) => {
+    await request.extractUser()
+  })
+
+  app.get('/', async function (request, reply) {
+    return request.user
+  })
+
+  teardown(app.close.bind(app))
+
+  await app.ready()
+
+  {
+    const res = await app.inject({ method: 'GET', url: '/' })
     equal(res.statusCode, 200)
     strictSame(res.json(), { id: 42, role: 'user' })
   }
