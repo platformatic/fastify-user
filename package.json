@@ -29,7 +29,7 @@
     "@fastify/session": "^10.1.1",
     "c8": "^8.0.0",
     "dockerode": "^3.3.4",
-    "fast-jwt": "^2.1.0",
+    "fast-jwt": "^3.0.0",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
     "tap": "^16.3.3",
