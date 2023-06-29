@@ -1,5 +1,6 @@
-const fastify = require('fastify')
+'use strict'
 
+const fastify = require('fastify')
 const { test } = require('tap')
 const { createSigner } = require('fast-jwt')
 const fastifyUser = require('..')

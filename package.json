@@ -28,7 +28,6 @@
     "@fastify/cookie": "^8.3.0",
     "@fastify/session": "^10.1.1",
     "c8": "^8.0.0",
-    "dockerode": "^3.3.4",
     "fast-jwt": "^3.0.0",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
