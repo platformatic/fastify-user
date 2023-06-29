@@ -89,6 +89,33 @@ Example of options:
 ## JWT and Webhook
 In case both `jwt` and `webhook` options are specified, the plugin will try to populate `request.user` from the JWT token first. If the token is not valid, it will try to populate `request.user` from the webhook.
 
+
+## Custom auth strategies
+
+In case if you want to use your own auth strategy, you can pass it as an option to the plugin. All custom auth strategies should have `createSession` method, which will be called on every request. This method should set `request.user` object. All custom strategies will be executed after `jwt` and `webhook` strategies.
+
+```js
+{
+  authStrategies: [{
+    name: 'myAuthStrategy',
+    createSession: async function (request, reply) {
+      req.user = { id: 42, role: 'admin' }
+    }
+  }]
+}
+```
+
+or you can add it via `addAuthStrategy` method:
+
+```js
+app.addAuthStrategy({
+  name: 'myAuthStrategy',
+  createSession: async function (request, reply) {
+    req.user = { id: 42, role: 'admin' }
+  }
+})
+```
+
 ## Run Tests
 
 ```
