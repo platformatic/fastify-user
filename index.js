@@ -1,3 +1,5 @@
+'use strict'
+
 const fp = require('fastify-plugin')
 
 /**
@@ -9,38 +11,46 @@ const fp = require('fastify-plugin')
 async function fastifyUser (app, options, done) {
   const {
     webhook,
-    jwt
+    jwt,
+    customStrategies
   } = options
+
+  const strategies = customStrategies || []
 
   if (jwt) {
     await app.register(require('./lib/jwt'), { jwt })
+    strategies.push({
+      name: 'jwt',
+      createSession: (req) => req.createJWTSession()
+    })
   }
 
   if (webhook) {
     await app.register(require('./lib/webhook'), { webhook })
+    strategies.push({
+      name: 'webhook',
+      createSession: (req) => req.createWebhookSession()
+    })
   }
 
-  if (jwt && webhook) {
-    app.decorateRequest('createSession', async function () {
+  app.decorateRequest('createSession', async function () {
+    const errors = []
+    for (const strategy of strategies) {
       try {
-        // `createSession` actually exists only if jwt or webhook are enabled
-        // and creates a new `request.user` object
-        await this.createJWTSession()
-      } catch (err) {
-        this.log.trace({ err })
-
-        await this.createWebhookSession()
+        return await strategy.createSession(this)
+      } catch (error) {
+        errors.push({ strategy: strategy.name, error })
+        this.log.trace({ strategy: strategy.name, error })
       }
-    })
-  } else if (jwt) {
-    app.decorateRequest('createSession', function () {
-      return this.createJWTSession()
-    })
-  } else if (webhook) {
-    app.decorateRequest('createSession', function () {
-      return this.createWebhookSession()
-    })
-  }
+    }
+
+    if (errors.length === 1) {
+      throw new Error(errors[0].error)
+    }
+
+    const errorsMessage = errors.map(({ strategy, error }) => `${strategy}: ${error}`).join('; ')
+    throw new Error(`No auth strategy succeeded. ${errorsMessage}`)
+  })
 
   const extractUser = async function () {
     const request = this

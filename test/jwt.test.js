@@ -1,29 +1,12 @@
 const fastify = require('fastify')
 
 const { test } = require('tap')
-const { createPublicKey, generateKeyPairSync } = require('crypto')
 const { createSigner } = require('fast-jwt')
 const fastifyUser = require('..')
 
-// creates a RSA key pair for the test
-const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-  modulusLength: 2048,
-  publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
-  privateKeyEncoding: { type: 'pkcs1', format: 'pem' }
-})
-const jwtPublicKey = createPublicKey(publicKey).export({ format: 'jwk' })
+const { generateKeyPair, buildJwksEndpoint } = require('./helper')
 
-async function buildJwksEndpoint (jwks, fail = false) {
-  const app = fastify()
-  app.get('/.well-known/jwks.json', async (request, reply) => {
-    if (fail) {
-      throw Error('JWKS ENDPOINT ERROR')
-    }
-    return jwks
-  })
-  await app.listen({ port: 0 })
-  return app
-}
+const { publicJwk, privateKey } = generateKeyPair()
 
 test('JWT verify OK using shared secret', async ({ same, teardown }) => {
   const payload = {
@@ -67,7 +50,7 @@ test('JWT verify OK using shared secret', async ({ same, teardown }) => {
 })
 
 test('JWT verify OK getting public key from jwks endpoint', async ({ same, teardown }) => {
-  const { n, e, kty } = jwtPublicKey
+  const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
   const jwksEndpoint = await buildJwksEndpoint(
@@ -198,7 +181,7 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
 })
 
 test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, teardown, same, equal }) => {
-  const { n, e, kty } = jwtPublicKey
+  const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
 
@@ -270,7 +253,7 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
 })
 
 test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, same, equal }) => {
-  const { n, e, kty } = jwtPublicKey
+  const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
 
@@ -344,7 +327,7 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
 })
 
 test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equal }) => {
-  const { n, e, kty } = jwtPublicKey
+  const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
   const jwksEndpoint = await buildJwksEndpoint(
