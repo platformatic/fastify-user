@@ -3,37 +3,43 @@ import { type FastifyPluginCallback, type FastifyReply, type FastifyRequest } fr
 import { type GetJwksOptions } from 'get-jwks'
 import { type URL, type UrlObject } from 'url'
 
-export interface FastifyUserPluginJWTOptions extends FastifyJWTOptions {
+export interface JWTOptions extends FastifyJWTOptions {
   namespace?: string
   jwks?: boolean | GetJwksOptions
 }
 
-export interface FastifyUserPluginWebhookOptions {
+export interface WebhookOptions {
   url: string | URL | UrlObject
 }
 
-export type FastifyUserPluginCreateSession = (request?: FastifyRequest, reply?: FastifyReply) => Promise<void>
+export type CreateSession = (request?: FastifyRequest, reply?: FastifyReply) => Promise<void>
 
-export interface FastifyUserPluginAuthStrategy {
+export interface AuthStrategy {
   name: string,
-  createSession: FastifyUserPluginCreateSession
+  createSession: CreateSession
 }
 
 export interface FastifyUserPluginOptions {
-  jwt?: FastifyUserPluginJWTOptions
-  webhook?: FastifyUserPluginWebhookOptions
-  authStrategies?: FastifyUserPluginAuthStrategy[]
+  jwt?: JWTOptions
+  webhook?: WebhookOptions
+  authStrategies?: AuthStrategy[]
 }
+
+export type AddAuthStrategyDecorator = (strategy: AuthStrategy) => void
+export type ExtractUserDecorator = () => Promise<any>
+export type CreateSessionDecorator = () => Promise<void>
+export type CreateJWTSessionDecorator = () => Promise<VerifyPayloadType>
+export type CreateWebhookSessionDecorator = () => Promise<void>
 
 declare module 'fastify' {
   interface FastifyInstance {
-    addAuthStrategy: (strategy: FastifyUserPluginAuthStrategy) => void
+    addAuthStrategy: AddAuthStrategyDecorator
   }
   interface FastifyRequest {
-    extractUser: () => Promise<any>
-    createSession: () => Promise<void>
-    createJWTSession: () => Promise<VerifyPayloadType>
-    createWebhookSession: () => Promise<void>
+    extractUser: ExtractUserDecorator
+    createSession: CreateSessionDecorator
+    createJWTSession: CreateJWTSessionDecorator
+    createWebhookSession: CreateWebhookSessionDecorator
   }
 }
 
