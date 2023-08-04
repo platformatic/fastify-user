@@ -8,6 +8,7 @@
     "test": "standard | snazzy && c8 --100 tap --no-coverage  test/*test.js && tsd",
     "lint": "standard"
   },
+  "types": "index.d.ts",
   "keywords": [
     "fastify",
     "user",
