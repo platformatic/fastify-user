@@ -5,7 +5,7 @@
   "description": "Fastify plugin to extract user",
   "main": "index.js",
   "scripts": {
-    "test": "standard | snazzy && c8 --100 tap --no-coverage  test/*test.js",
+    "test": "standard | snazzy && c8 --100 tap --no-coverage  test/*test.js && tsd",
     "lint": "standard"
   },
   "keywords": [
@@ -27,11 +27,13 @@
   "devDependencies": {
     "@fastify/cookie": "^8.3.0",
     "@fastify/session": "^10.1.1",
+    "@types/node": "^20.4.7",
     "c8": "^8.0.0",
     "fast-jwt": "^3.0.0",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
     "tap": "^16.3.3",
+    "tsd": "^0.28.1",
     "undici": "^5.14.0"
   }
 }
