@@ -1,5 +1,5 @@
 import { FastifyJWTOptions, VerifyPayloadType } from '@fastify/jwt'
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify'
 import { GetJwksOptions } from 'get-jwks'
 import { URL, UrlObject } from 'url'
 
@@ -37,6 +37,6 @@ declare module 'fastify' {
   }
 }
 
-declare const fastifyUser: FastifyPluginAsync<FastifyUserPluginOptions>
+declare const fastifyUser: FastifyPluginCallback<FastifyUserPluginOptions>
 
 export default fastifyUser
