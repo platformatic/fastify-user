@@ -1,7 +1,7 @@
-import { FastifyJWTOptions, VerifyPayloadType } from '@fastify/jwt'
-import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify'
-import { GetJwksOptions } from 'get-jwks'
-import { URL, UrlObject } from 'url'
+import { type FastifyJWTOptions, type VerifyPayloadType } from '@fastify/jwt'
+import { type FastifyPluginCallback, type FastifyReply, type FastifyRequest } from 'fastify'
+import { type GetJwksOptions } from 'get-jwks'
+import { type URL, type UrlObject } from 'url'
 
 export interface FastifyUserPluginJWTOptions extends FastifyJWTOptions {
   namespace?: string
