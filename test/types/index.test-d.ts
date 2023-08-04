@@ -1,14 +1,19 @@
-import fastify, { type FastifyInstance } from 'fastify'
+import fastify, {
+  type FastifyPluginCallback
+} from 'fastify'
 import { expectType } from 'tsd'
 import fastifyUser, {
   type AddAuthStrategyDecorator,
   type CreateJWTSessionDecorator,
   type CreateSessionDecorator,
   type CreateWebhookSessionDecorator,
-  type ExtractUserDecorator
+  type ExtractUserDecorator,
+  type FastifyUserPluginOptions
 } from '../..'
 
-const app: FastifyInstance = fastify()
+expectType<FastifyPluginCallback<FastifyUserPluginOptions>>(fastifyUser)
+
+const app = fastify()
 app.register(fastifyUser)
 app.register(async (instance) => {
   expectType<AddAuthStrategyDecorator>(instance.addAuthStrategy)
