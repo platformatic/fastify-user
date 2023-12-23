@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "fastify-user",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Fastify plugin to extract user",
   "main": "index.js",
   "scripts": {
