@@ -8,7 +8,7 @@ const fp = require('fastify-plugin')
   * 1. JWT is checked first, if this is OK, the user is created from the JWT token
   * 2. If JWT is not OK, the user is created from the answer returned by the webhook (currently the body)
   */
-async function fastifyUser (app, options, done) {
+async function fastifyUser (app, options) {
   const {
     webhook,
     jwt,
@@ -76,8 +76,6 @@ async function fastifyUser (app, options, done) {
   }
 
   app.decorateRequest('extractUser', extractUser)
-
-  done()
 }
 
 module.exports = fp(fastifyUser, {
