@@ -69,7 +69,7 @@ async function fastifyUser (app, options) {
         await request.createSession()
         request.log.debug({ user: request.user }, 'logged user in')
       } catch (err) {
-        request.log.error({ err })
+        request.log.debug({ err }, 'failed to create a session')
       }
     }
     return request.user
