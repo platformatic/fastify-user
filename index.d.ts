@@ -26,7 +26,7 @@ export interface FastifyUserPluginOptions {
 }
 
 export type AddAuthStrategyDecorator = (strategy: AuthStrategy) => void
-export type ExtractUserDecorator = () => Promise<any>
+export type ExtractUserDecorator = <T = any>() => Promise<T>
 export type CreateSessionDecorator = () => Promise<void>
 export type CreateJWTSessionDecorator = () => Promise<VerifyPayloadType>
 export type CreateWebhookSessionDecorator = () => Promise<void>
