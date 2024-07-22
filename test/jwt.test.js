@@ -11,7 +11,7 @@ const { publicJwk, privateKey } = generateKeyPair()
 
 test('JWT verify OK using shared secret', async ({ same, teardown }) => {
   const payload = {
-    'USER-ID': 42
+    'USER-ID': 42,
   }
 
   const app = fastify()
@@ -20,8 +20,8 @@ test('JWT verify OK using shared secret', async ({ same, teardown }) => {
 
   app.register(fastifyUser, {
     jwt: {
-      secret: 'supersecret'
-    }
+      secret: 'supersecret',
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -40,13 +40,13 @@ test('JWT verify OK using shared secret', async ({ same, teardown }) => {
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   same(response.statusCode, 200)
   same(response.json(), {
-    'USER-ID': 42
+    'USER-ID': 42,
   })
 })
 
@@ -63,19 +63,19 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
   const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const payload = {
-    'USER-ID': 42
+    'USER-ID': 42,
   }
 
   const app = fastify()
@@ -85,8 +85,8 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
 
   app.register(fastifyUser, {
     jwt: {
-      jwks: true
-    }
+      jwks: true,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -104,7 +104,7 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
     key: privateKey,
     header,
     iss: issuer,
-    kid
+    kid,
   })
   const token = signSync(payload)
 
@@ -112,13 +112,13 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   same(response.statusCode, 200)
   same(response.json(), {
-    'USER-ID': 42
+    'USER-ID': 42,
   })
 })
 
@@ -133,10 +133,10 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const payload = {
-    'USER-ID': 42
+    'USER-ID': 42,
   }
 
   const app = fastify()
@@ -146,8 +146,8 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
 
   app.register(fastifyUser, {
     jwt: {
-      jwks: true
-    }
+      jwks: true,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -165,7 +165,7 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
     key: privateKey,
     header,
     iss: issuer,
-    kid
+    kid,
   })
   const token = signSync(payload)
 
@@ -173,8 +173,8 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   equal(res.statusCode, 200)
@@ -195,9 +195,9 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
 
@@ -205,18 +205,18 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
   const header = {
     kid: 'DIFFERENT_KID',
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const payload = {
-    'USER-ID': 42
+    'USER-ID': 42,
   }
 
   const app = fastify()
 
   app.register(fastifyUser, {
     jwt: {
-      jwks: true
-    }
+      jwks: true,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -237,7 +237,7 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     key: privateKey,
     header,
     iss: issuer,
-    kid
+    kid,
   })
   const token = signSync(payload)
 
@@ -245,8 +245,8 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   equal(res.statusCode, 200)
@@ -267,9 +267,9 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
 
@@ -277,10 +277,10 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const payload = {
-    'USER-ID': 42
+    'USER-ID': 42,
   }
 
   const app = fastify()
@@ -288,9 +288,9 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
   app.register(fastifyUser, {
     jwt: {
       jwks: {
-        allowedDomains: ['http://myalloawedomain.com']
-      }
-    }
+        allowedDomains: ['http://myalloawedomain.com'],
+      },
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -311,7 +311,7 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     key: privateKey,
     header,
     iss: issuer,
-    kid
+    kid,
   })
   const token = signSync(payload)
 
@@ -319,8 +319,8 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   equal(res.statusCode, 200)
@@ -340,20 +340,20 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
   const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const namespace = 'https://test.com/'
   const payload = {
-    [`${namespace}USER-ID`]: 42
+    [`${namespace}USER-ID`]: 42,
   }
 
   const app = fastify()
@@ -361,8 +361,8 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
   app.register(fastifyUser, {
     jwt: {
       jwks: true,
-      namespace
-    }
+      namespace,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -383,7 +383,7 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     key: privateKey,
     header,
     iss: issuer,
-    kid
+    kid,
   })
   const token = signSync(payload)
 
@@ -391,13 +391,13 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     method: 'GET',
     url: '/',
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   })
 
   same(response.statusCode, 200)
   same(response.json(), {
-    'USER-ID': 42
+    'USER-ID': 42,
   })
 })
 
@@ -420,7 +420,7 @@ test('if no jwt conf is set, no user is added', async ({ same, teardown }) => {
 
   const response = await app.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   })
 
   same(response.statusCode, 200)

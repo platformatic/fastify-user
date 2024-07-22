@@ -9,7 +9,7 @@ const { buildAuthorizer } = require('./helper')
 
 const agent = new Agent({
   keepAliveTimeout: 10,
-  keepAliveMaxTimeout: 10
+  keepAliveMaxTimeout: 10,
 })
 setGlobalDispatcher(agent)
 
@@ -19,8 +19,8 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
 
   app.register(fastifyUser, {
     webhook: {
-      url: `http://localhost:${authorizer.server.address().port}/authorize`
-    }
+      url: `http://localhost:${authorizer.server.address().port}/authorize`,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -47,12 +47,12 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
       method: 'GET',
       url: '/',
       headers: {
-        cookie
-      }
+        cookie,
+      },
     })
     equal(res.statusCode, 200)
     same(res.json(), {
-      'USER-ID': 42
+      'USER-ID': 42,
     })
   }
 
@@ -61,15 +61,15 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
       method: 'POST',
       url: '/',
       headers: {
-        cookie
+        cookie,
       },
       body: {
-        test: 'test'
-      }
+        test: 'test',
+      },
     })
     equal(res.statusCode, 200)
     same(res.json(), {
-      'USER-ID': 42
+      'USER-ID': 42,
     })
   }
 })
@@ -83,14 +83,14 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
         err.statusCode = request.headers['X-STATUS-CODE']
         throw err
       }
-    }
+    },
   })
   const app = fastify()
 
   app.register(fastifyUser, {
     webhook: {
-      url: `http://localhost:${authorizer.server.address().port}/authorize`
-    }
+      url: `http://localhost:${authorizer.server.address().port}/authorize`,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -108,7 +108,7 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
 
   const res = await app.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   })
   equal(res.statusCode, 200)
   same(res.json(), {})
@@ -134,7 +134,7 @@ test('if no webhook conf is set, no user is added', async ({ same, teardown }) =
 
   const response = await app.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   })
 
   same(response.statusCode, 200)
