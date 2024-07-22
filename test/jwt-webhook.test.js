@@ -9,14 +9,14 @@ const fastifyUser = require('..')
 const {
   generateKeyPair,
   buildJwksEndpoint,
-  buildAuthorizer
+  buildAuthorizer,
 } = require('./helper')
 
 const { publicJwk, privateKey } = generateKeyPair()
 
 const agent = new Agent({
   keepAliveTimeout: 10,
-  keepAliveMaxTimeout: 10
+  keepAliveMaxTimeout: 10,
 })
 setGlobalDispatcher(agent)
 
@@ -36,9 +36,9 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
   teardown(() => jwksEndpoint.close())
@@ -47,19 +47,19 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.register(fastifyUser, {
     webhook: {
-      url: `http://localhost:${authorizer.server.address().port}/authorize`
+      url: `http://localhost:${authorizer.server.address().port}/authorize`,
     },
     jwt: {
-      jwks: true
-    }
+      jwks: true,
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -79,19 +79,19 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
   // Must use webhooks to get user
   {
     const cookie = await authorizer.getCookie({
-      'USER-ID-FROM-WEBHOOK': 42
+      'USER-ID-FROM-WEBHOOK': 42,
     })
 
     const res = await app.inject({
       method: 'GET',
       url: '/',
       headers: {
-        cookie
-      }
+        cookie,
+      },
     })
     equal(res.statusCode, 200)
     same(res.json(), {
-      'USER-ID-FROM-WEBHOOK': 42
+      'USER-ID-FROM-WEBHOOK': 42,
     })
   }
 
@@ -102,10 +102,10 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
       key: privateKey,
       header,
       iss: issuer,
-      kid
+      kid,
     })
     const payload = {
-      'USER-ID-FROM-JWT': 42
+      'USER-ID-FROM-JWT': 42,
     }
     const token = signSync(payload)
 
@@ -113,19 +113,19 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
       method: 'GET',
       url: '/',
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
     equal(res.statusCode, 200, 'pages status code')
     same(res.json(), {
-      'USER-ID-FROM-JWT': 42
+      'USER-ID-FROM-JWT': 42,
     })
   }
 })
 
 async function buildAuthorizerAPIToken (opts = {}) {
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.post('/authorize', async (request, reply) => {
@@ -141,11 +141,11 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
     async onAuthorize (request) {
       equal(request.headers.authorization, 'Bearer foobar')
       const payload = {
-        'USER-ID': 42
+        'USER-ID': 42,
       }
 
       return payload
-    }
+    },
   })
   teardown(() => authorizer.close())
 
@@ -161,9 +161,9 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
           n,
           e,
           use: 'sig',
-          kid
-        }
-      ]
+          kid,
+        },
+      ],
     }
   )
   teardown(() => jwksEndpoint.close())
@@ -172,21 +172,21 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
   const header = {
     kid,
     alg,
-    typ: 'JWT'
+    typ: 'JWT',
   }
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.register(fastifyUser, {
     webhook: {
-      url: `http://localhost:${authorizer.server.address().port}/authorize`
+      url: `http://localhost:${authorizer.server.address().port}/authorize`,
     },
     jwt: {
-      jwks: true
+      jwks: true,
     },
     roleKey: 'X-PLATFORMATIC-ROLE',
-    anonymousRole: 'anonymous'
+    anonymousRole: 'anonymous',
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -208,12 +208,12 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
       method: 'GET',
       url: '/',
       headers: {
-        Authorization: 'Bearer foobar'
-      }
+        Authorization: 'Bearer foobar',
+      },
     })
     equal(res.statusCode, 200)
     same(res.json(), {
-      'USER-ID': 42
+      'USER-ID': 42,
     })
   }
 
@@ -223,10 +223,10 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
       key: privateKey,
       header,
       iss: issuer,
-      kid
+      kid,
     })
     const payload = {
-      'USER-ID': 43
+      'USER-ID': 43,
     }
     const token = signSync(payload)
 
@@ -234,12 +234,12 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
       method: 'GET',
       url: '/',
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
     equal(res.statusCode, 200)
     same(res.json(), {
-      'USER-ID': 43
+      'USER-ID': 43,
     })
   }
 })

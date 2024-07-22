@@ -21,7 +21,7 @@ function generateKeyPair () {
   const { publicKey, privateKey } = generateKeyPairSync('rsa', {
     modulusLength: 2048,
     publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs1', format: 'pem' }
+    privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
   })
   const publicJwk = createPublicKey(publicKey).export({ format: 'jwk' })
   return { publicKey, publicJwk, privateKey }
@@ -33,13 +33,13 @@ async function buildAuthorizer (opts = {}) {
   app.register(require('@fastify/session'), {
     cookieName: 'sessionId',
     secret: 'a secret with minimum length of 32 characters',
-    cookie: { secure: false }
+    cookie: { secure: false },
   })
 
   app.post('/login', async (request, reply) => {
     request.session.user = request.body
     return {
-      status: 'ok'
+      status: 'ok',
     }
   })
 
@@ -59,9 +59,9 @@ async function buildAuthorizer (opts = {}) {
     const res = await request(`http://localhost:${app.server.address().port}/login`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(cookie)
+      body: JSON.stringify(cookie),
     })
 
     res.body.resume()
@@ -77,5 +77,5 @@ async function buildAuthorizer (opts = {}) {
 module.exports = {
   generateKeyPair,
   buildJwksEndpoint,
-  buildAuthorizer
+  buildAuthorizer,
 }

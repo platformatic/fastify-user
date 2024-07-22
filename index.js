@@ -12,7 +12,7 @@ async function fastifyUser (app, options) {
   const {
     webhook,
     jwt,
-    authStrategies
+    authStrategies,
   } = options
 
   const strategies = []
@@ -21,7 +21,7 @@ async function fastifyUser (app, options) {
     await app.register(require('./lib/jwt'), { jwt })
     strategies.push({
       name: 'jwt',
-      createSession: (req) => req.createJWTSession()
+      createSession: (req) => req.createJWTSession(),
     })
   }
 
@@ -29,7 +29,7 @@ async function fastifyUser (app, options) {
     await app.register(require('./lib/webhook'), { webhook })
     strategies.push({
       name: 'webhook',
-      createSession: (req) => req.createWebhookSession()
+      createSession: (req) => req.createWebhookSession(),
     })
   }
 
@@ -80,7 +80,7 @@ async function fastifyUser (app, options) {
 
 module.exports = fp(fastifyUser, {
   fastify: '4.x',
-  name: 'fastify-user'
+  name: 'fastify-user',
 })
 
 module.exports.default = fastifyUser

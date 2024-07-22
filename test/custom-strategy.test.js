@@ -9,13 +9,13 @@ const { buildAuthorizer } = require('./helper')
 
 const agent = new Agent({
   keepAliveTimeout: 10,
-  keepAliveMaxTimeout: 10
+  keepAliveMaxTimeout: 10,
 })
 setGlobalDispatcher(agent)
 
 test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.register(fastifyUser, {
@@ -23,8 +23,8 @@ test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
       name: 'myStrategy',
       createSession: async function (req) {
         req.user = { id: 42, role: 'user' }
-      }
-    }]
+      },
+    }],
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -48,7 +48,7 @@ test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
 
 test('multiple custom strategies', async ({ teardown, strictSame, equal }) => {
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.register(fastifyUser, {
@@ -57,15 +57,15 @@ test('multiple custom strategies', async ({ teardown, strictSame, equal }) => {
         name: 'myStrategy1',
         createSession: function () {
           throw new Error('myStrategy1 failed')
-        }
+        },
       },
       {
         name: 'myStrategy2',
         createSession: async function (req) {
           req.user = { id: 43, role: 'user' }
-        }
-      }
-    ]
+        },
+      },
+    ],
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -92,12 +92,12 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
   teardown(() => authorizer.close())
 
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   app.register(fastifyUser, {
     webhook: {
-      url: `http://localhost:${authorizer.server.address().port}/authorize`
+      url: `http://localhost:${authorizer.server.address().port}/authorize`,
     },
     authStrategies: [
       {
@@ -108,9 +108,9 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
           } else {
             throw new Error('myStrategy1 failed')
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   })
 
   app.addHook('preHandler', async (request, reply) => {
@@ -128,19 +128,19 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
 
   {
     const cookie = await authorizer.getCookie({
-      'USER-ID-FROM-WEBHOOK': 42
+      'USER-ID-FROM-WEBHOOK': 42,
     })
 
     const res = await app.inject({
       method: 'GET',
       url: '/',
       headers: {
-        cookie
-      }
+        cookie,
+      },
     })
     equal(res.statusCode, 200)
     strictSame(res.json(), {
-      'USER-ID-FROM-WEBHOOK': 42
+      'USER-ID-FROM-WEBHOOK': 42,
     })
   }
 
@@ -149,8 +149,8 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
       method: 'GET',
       url: '/',
       headers: {
-        'x-custom-auth': 'true'
-      }
+        'x-custom-auth': 'true',
+      },
     })
     equal(res.statusCode, 200)
     strictSame(res.json(), { id: 42, role: 'user' })
@@ -159,7 +159,7 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
 
 test('add custom strategy via addCustomStrategy hook', async ({ teardown, strictSame, equal }) => {
   const app = fastify({
-    forceCloseConnections: true
+    forceCloseConnections: true,
   })
 
   await app.register(fastifyUser)
@@ -168,7 +168,7 @@ test('add custom strategy via addCustomStrategy hook', async ({ teardown, strict
     name: 'myStrategy',
     createSession: async function (req) {
       req.user = { id: 42, role: 'user' }
-    }
+    },
   })
 
   app.addHook('preHandler', async (request, reply) => {
