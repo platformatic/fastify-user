@@ -26,4 +26,3 @@ app.register(async (instance) => {
     expectType<CreateWebhookSessionDecorator>(request.createWebhookSession)
   })
 })
-
