@@ -1,5 +1,6 @@
 import { type FastifyJWTOptions, type VerifyPayloadType } from '@fastify/jwt'
 import { type FastifyPluginCallback, type FastifyReply, type FastifyRequest } from 'fastify'
+import { Agent } from 'http'
 import { type URL, type UrlObject } from 'url'
 
 // Copied over to avoid TypeScript compilation errors
