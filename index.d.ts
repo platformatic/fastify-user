@@ -1,7 +1,19 @@
 import { type FastifyJWTOptions, type VerifyPayloadType } from '@fastify/jwt'
 import { type FastifyPluginCallback, type FastifyReply, type FastifyRequest } from 'fastify'
-import { type GetJwksOptions } from 'get-jwks'
+import { Agent } from 'http'
 import { type URL, type UrlObject } from 'url'
+
+// Copied over to avoid TypeScript compilation errors
+// https://github.com/nearform/get-jwks/issues/309
+type GetJwksOptions = {
+  max?: number
+  ttl?: number
+  issuersWhitelist?: string[]
+  providerDiscovery?: boolean
+  jwksPath?: string
+  agent?: Agent
+  timeout?: number
+}
 
 export interface JWTOptions extends FastifyJWTOptions {
   namespace?: string
