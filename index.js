@@ -79,7 +79,7 @@ async function fastifyUser (app, options) {
 }
 
 module.exports = fp(fastifyUser, {
-  fastify: '4.x',
+  fastify: '5.x',
   name: 'fastify-user'
 })
 
