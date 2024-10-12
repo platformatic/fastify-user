@@ -26,7 +26,7 @@
     "get-jwks": "^9.0.0"
   },
   "devDependencies": {
-    "@fastify/cookie": "^10.0.0",
+    "@fastify/cookie": "^11.0.0",
     "@fastify/session": "^11.0.0",
     "@types/node": "^20.4.7",
     "c8": "^10.0.0",
