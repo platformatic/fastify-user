@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@fastify/error": "^4.0.0",
-    "@fastify/jwt": "^9.0.0",
+    "@fastify/jwt": "^10.0.0",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.0",
     "get-jwks": "^11.0.0"
