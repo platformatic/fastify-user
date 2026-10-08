@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@fastify/error": "^4.0.0",
-    "@fastify/jwt": "^9.0.0",
+    "@fastify/jwt": "^10.2.2",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.0",
     "get-jwks": "^11.0.0"
@@ -30,7 +30,7 @@
     "@fastify/session": "^11.0.0",
     "@types/node": "^24.0.0",
     "c8": "^10.0.0",
-    "fast-jwt": "^5.0.0",
+    "fast-jwt": "^6.3.4",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
     "tap": "^16.3.3",
