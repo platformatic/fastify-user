@@ -1,7 +1,8 @@
 'use strict'
 
 const fastify = require('fastify')
-const { test } = require('tap')
+const { test } = require('node:test')
+const assert = require('node:assert')
 const { Agent, setGlobalDispatcher } = require('undici')
 const fastifyUser = require('..')
 
@@ -13,7 +14,7 @@ const agent = new Agent({
 })
 setGlobalDispatcher(agent)
 
-test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
+test('custom auth strategy', async (t) => {
   const app = fastify({
     forceCloseConnections: true
   })
@@ -35,18 +36,18 @@ test('custom auth strategy', async ({ teardown, strictSame, equal }) => {
     return request.user
   })
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   await app.ready()
 
   {
     const res = await app.inject({ method: 'GET', url: '/' })
-    equal(res.statusCode, 200)
-    strictSame(res.json(), { id: 42, role: 'user' })
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), { id: 42, role: 'user' })
   }
 })
 
-test('multiple custom strategies', async ({ teardown, strictSame, equal }) => {
+test('multiple custom strategies', async (t) => {
   const app = fastify({
     forceCloseConnections: true
   })
@@ -76,20 +77,20 @@ test('multiple custom strategies', async ({ teardown, strictSame, equal }) => {
     return request.user
   })
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   await app.ready()
 
   {
     const res = await app.inject({ method: 'GET', url: '/' })
-    equal(res.statusCode, 200)
-    strictSame(res.json(), { id: 43, role: 'user' })
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), { id: 43, role: 'user' })
   }
 })
 
-test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
+test('webhook + custom strategy', async (t) => {
   const authorizer = await buildAuthorizer()
-  teardown(() => authorizer.close())
+  t.after(() => authorizer.close())
 
   const app = fastify({
     forceCloseConnections: true
@@ -121,8 +122,8 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => authorizer.close())
+  t.after(() => app.close())
+  t.after(() => authorizer.close())
 
   await app.ready()
 
@@ -138,8 +139,8 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
         cookie
       }
     })
-    equal(res.statusCode, 200)
-    strictSame(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID-FROM-WEBHOOK': 42
     })
   }
@@ -152,12 +153,12 @@ test('webhook + custom strategy', async ({ teardown, strictSame, equal }) => {
         'x-custom-auth': 'true'
       }
     })
-    equal(res.statusCode, 200)
-    strictSame(res.json(), { id: 42, role: 'user' })
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), { id: 42, role: 'user' })
   }
 })
 
-test('add custom strategy via addCustomStrategy hook', async ({ teardown, strictSame, equal }) => {
+test('add custom strategy via addCustomStrategy hook', async (t) => {
   const app = fastify({
     forceCloseConnections: true
   })
@@ -179,13 +180,13 @@ test('add custom strategy via addCustomStrategy hook', async ({ teardown, strict
     return request.user
   })
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   await app.ready()
 
   {
     const res = await app.inject({ method: 'GET', url: '/' })
-    equal(res.statusCode, 200)
-    strictSame(res.json(), { id: 42, role: 'user' })
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), { id: 42, role: 'user' })
   }
 })

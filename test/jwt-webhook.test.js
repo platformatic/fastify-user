@@ -1,7 +1,8 @@
 'use strict'
 
 const fastify = require('fastify')
-const { test } = require('tap')
+const { test } = require('node:test')
+const assert = require('node:assert')
 const { Agent, setGlobalDispatcher } = require('undici')
 const { createSigner } = require('fast-jwt')
 const fastifyUser = require('..')
@@ -20,9 +21,9 @@ const agent = new Agent({
 })
 setGlobalDispatcher(agent)
 
-test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
+test('JWT + cookies with WebHook', async (t) => {
   const authorizer = await buildAuthorizer()
-  teardown(() => authorizer.close())
+  t.after(() => authorizer.close())
 
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
@@ -41,7 +42,7 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
       ]
     }
   )
-  teardown(() => jwksEndpoint.close())
+  t.after(() => jwksEndpoint.close())
 
   const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
   const header = {
@@ -70,9 +71,9 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => authorizer.close())
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => authorizer.close())
+  t.after(() => jwksEndpoint.close())
 
   await app.ready()
 
@@ -89,8 +90,8 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
         cookie
       }
     })
-    equal(res.statusCode, 200)
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID-FROM-WEBHOOK': 42
     })
   }
@@ -116,8 +117,8 @@ test('JWT + cookies with WebHook', async ({ pass, teardown, same, equal }) => {
         Authorization: `Bearer ${token}`
       }
     })
-    equal(res.statusCode, 200, 'pages status code')
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200, 'pages status code')
+    assert.deepStrictEqual(res.json(), {
       'USER-ID-FROM-JWT': 42
     })
   }
@@ -136,10 +137,10 @@ async function buildAuthorizerAPIToken (opts = {}) {
   return app
 }
 
-test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, equal }) => {
+test('Authorization both with JWT and WebHook', async (t) => {
   const authorizer = await buildAuthorizerAPIToken({
     async onAuthorize (request) {
-      equal(request.headers.authorization, 'Bearer foobar')
+      assert.strictEqual(request.headers.authorization, 'Bearer foobar')
       const payload = {
         'USER-ID': 42
       }
@@ -147,7 +148,7 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
       return payload
     }
   })
-  teardown(() => authorizer.close())
+  t.after(() => authorizer.close())
 
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
@@ -166,7 +167,7 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
       ]
     }
   )
-  teardown(() => jwksEndpoint.close())
+  t.after(() => jwksEndpoint.close())
 
   const issuer = `http://localhost:${jwksEndpoint.server.address().port}`
   const header = {
@@ -197,9 +198,9 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => authorizer.close())
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => authorizer.close())
+  t.after(() => jwksEndpoint.close())
 
   await app.ready()
 
@@ -211,8 +212,8 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
         Authorization: 'Bearer foobar'
       }
     })
-    equal(res.statusCode, 200)
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID': 42
     })
   }
@@ -237,8 +238,8 @@ test('Authorization both with JWT and WebHook', async ({ pass, teardown, same, e
         Authorization: `Bearer ${token}`
       }
     })
-    equal(res.statusCode, 200)
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID': 43
     })
   }
