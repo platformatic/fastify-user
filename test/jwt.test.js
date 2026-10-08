@@ -1,7 +1,8 @@
 'use strict'
 
 const fastify = require('fastify')
-const { test } = require('tap')
+const { test } = require('node:test')
+const assert = require('node:assert')
 const { createSigner } = require('fast-jwt')
 const fastifyUser = require('..')
 
@@ -9,14 +10,14 @@ const { generateKeyPair, buildJwksEndpoint } = require('./helper')
 
 const { publicJwk, privateKey } = generateKeyPair()
 
-test('JWT verify OK using shared secret', async ({ same, teardown }) => {
+test('JWT verify OK using shared secret', async (t) => {
   const payload = {
     'USER-ID': 42
   }
 
   const app = fastify()
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   app.register(fastifyUser, {
     jwt: {
@@ -44,13 +45,13 @@ test('JWT verify OK using shared secret', async ({ same, teardown }) => {
     }
   })
 
-  same(response.statusCode, 200)
-  same(response.json(), {
+  assert.deepStrictEqual(response.statusCode, 200)
+  assert.deepStrictEqual(response.json(), {
     'USER-ID': 42
   })
 })
 
-test('JWT verify OK getting public key from jwks endpoint', async ({ same, teardown }) => {
+test('JWT verify OK getting public key from jwks endpoint', async (t) => {
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
@@ -80,8 +81,8 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
 
   const app = fastify()
 
-  teardown(app.close.bind(app))
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => jwksEndpoint.close())
 
   app.register(fastifyUser, {
     jwt: {
@@ -116,13 +117,13 @@ test('JWT verify OK getting public key from jwks endpoint', async ({ same, teard
     }
   })
 
-  same(response.statusCode, 200)
-  same(response.json(), {
+  assert.deepStrictEqual(response.statusCode, 200)
+  assert.deepStrictEqual(response.json(), {
     'USER-ID': 42
   })
 })
 
-test('jwt verify fails if getting public key from jwks endpoint fails, so no user is added', async ({ pass, teardown, same, equal }) => {
+test('jwt verify fails if getting public key from jwks endpoint fails, so no user is added', async (t) => {
   const kid = 'TEST-KID'
   const alg = 'RS256'
   // This fails
@@ -141,8 +142,8 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
 
   const app = fastify()
 
-  teardown(app.close.bind(app))
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => jwksEndpoint.close())
 
   app.register(fastifyUser, {
     jwt: {
@@ -177,11 +178,11 @@ test('jwt verify fails if getting public key from jwks endpoint fails, so no use
     }
   })
 
-  equal(res.statusCode, 200)
-  same(res.json(), null)
+  assert.strictEqual(res.statusCode, 200)
+  assert.deepStrictEqual(res.json(), null)
 })
 
-test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, teardown, same, equal }) => {
+test('jwt verify fail if jwks succeed but kid is not found', async (t) => {
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
@@ -227,8 +228,8 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => jwksEndpoint.close())
 
   await app.ready()
 
@@ -249,11 +250,11 @@ test('jwt verify fail if jwks succeed but kid is not found', async ({ pass, tear
     }
   })
 
-  equal(res.statusCode, 200)
-  same(res.json(), null)
+  assert.strictEqual(res.statusCode, 200)
+  assert.deepStrictEqual(res.json(), null)
 })
 
-test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, same, equal }) => {
+test('jwt verify fails if the domain is not allowed', async (t) => {
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
@@ -301,8 +302,8 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => jwksEndpoint.close())
 
   await app.ready()
 
@@ -323,11 +324,11 @@ test('jwt verify fails if the domain is not allowed', async ({ pass, teardown, s
     }
   })
 
-  equal(res.statusCode, 200)
-  same(res.json(), null)
+  assert.strictEqual(res.statusCode, 200)
+  assert.deepStrictEqual(res.json(), null)
 })
 
-test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equal }) => {
+test('jwt skips namespace in custom claims', async (t) => {
   const { n, e, kty } = publicJwk
   const kid = 'TEST-KID'
   const alg = 'RS256'
@@ -373,8 +374,8 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => jwksEndpoint.close())
+  t.after(() => app.close())
+  t.after(() => jwksEndpoint.close())
 
   await app.ready()
 
@@ -395,16 +396,16 @@ test('jwt skips namespace in custom claims', async ({ pass, teardown, same, equa
     }
   })
 
-  same(response.statusCode, 200)
-  same(response.json(), {
+  assert.deepStrictEqual(response.statusCode, 200)
+  assert.deepStrictEqual(response.json(), {
     'USER-ID': 42
   })
 })
 
-test('if no jwt conf is set, no user is added', async ({ same, teardown }) => {
+test('if no jwt conf is set, no user is added', async (t) => {
   const app = fastify()
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   app.register(fastifyUser, {})
 
@@ -423,6 +424,6 @@ test('if no jwt conf is set, no user is added', async ({ same, teardown }) => {
     url: '/'
   })
 
-  same(response.statusCode, 200)
-  same(response.json(), {})
+  assert.deepStrictEqual(response.statusCode, 200)
+  assert.deepStrictEqual(response.json(), {})
 })

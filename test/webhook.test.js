@@ -1,7 +1,8 @@
 'use strict'
 
 const fastify = require('fastify')
-const { test } = require('tap')
+const { test } = require('node:test')
+const assert = require('node:assert')
 const { Agent, setGlobalDispatcher } = require('undici')
 const fastifyUser = require('..')
 
@@ -13,7 +14,7 @@ const agent = new Agent({
 })
 setGlobalDispatcher(agent)
 
-test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
+test('Webhook verify OK', async (t) => {
   const authorizer = await buildAuthorizer()
   const app = fastify()
 
@@ -35,8 +36,8 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
     return request.user
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => authorizer.close())
+  t.after(() => app.close())
+  t.after(() => authorizer.close())
 
   await app.ready()
 
@@ -50,8 +51,8 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
         cookie
       }
     })
-    equal(res.statusCode, 200)
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID': 42
     })
   }
@@ -67,18 +68,17 @@ test('Webhook verify OK', async ({ pass, teardown, same, equal }) => {
         test: 'test'
       }
     })
-    equal(res.statusCode, 200)
-    same(res.json(), {
+    assert.strictEqual(res.statusCode, 200)
+    assert.deepStrictEqual(res.json(), {
       'USER-ID': 42
     })
   }
 })
 
-test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
+test('Non-200 status code', async (t) => {
   const authorizer = await buildAuthorizer({
     onAuthorize: async (request) => {
       if (request.headers['x-status-code']) {
-        pass('authorizer called, throwing exception')
         const err = new Error('Unauthorized')
         err.statusCode = request.headers['X-STATUS-CODE']
         throw err
@@ -101,8 +101,8 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
     return request.user || {}
   })
 
-  teardown(app.close.bind(app))
-  teardown(() => authorizer.close())
+  t.after(() => app.close())
+  t.after(() => authorizer.close())
 
   await app.ready()
 
@@ -110,15 +110,14 @@ test('Non-200 status code', async ({ end, pass, teardown, same, equal }) => {
     method: 'GET',
     url: '/'
   })
-  equal(res.statusCode, 200)
-  same(res.json(), {})
-  end()
+  assert.strictEqual(res.statusCode, 200)
+  assert.deepStrictEqual(res.json(), {})
 })
 
-test('if no webhook conf is set, no user is added', async ({ same, teardown }) => {
+test('if no webhook conf is set, no user is added', async (t) => {
   const app = fastify()
 
-  teardown(app.close.bind(app))
+  t.after(() => app.close())
 
   app.register(fastifyUser, {})
 
@@ -137,6 +136,6 @@ test('if no webhook conf is set, no user is added', async ({ same, teardown }) =
     url: '/'
   })
 
-  same(response.statusCode, 200)
-  same(response.json(), {})
+  assert.deepStrictEqual(response.statusCode, 200)
+  assert.deepStrictEqual(response.json(), {})
 })

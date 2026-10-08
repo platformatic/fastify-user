@@ -5,7 +5,7 @@
   "description": "Fastify plugin to extract user",
   "main": "index.js",
   "scripts": {
-    "test": "standard | snazzy && c8 --100 tap --no-coverage  test/*test.js && tsd",
+    "test": "standard | snazzy && borp --coverage --check-coverage && tsd",
     "lint": "standard"
   },
   "types": "index.d.ts",
@@ -18,22 +18,24 @@
   ],
   "author": "Marco Piraccini <marco.piraccini@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@fastify/error": "^4.0.0",
     "@fastify/jwt": "^10.2.2",
     "fastify": "^5.0.0",
-    "fastify-plugin": "^5.0.0",
+    "fastify-plugin": "^6.0.0",
     "get-jwks": "^11.0.0"
   },
   "devDependencies": {
     "@fastify/cookie": "^11.0.0",
     "@fastify/session": "^11.0.0",
     "@types/node": "^24.0.0",
-    "c8": "^10.0.0",
+    "borp": "^1.0.0",
     "fast-jwt": "^6.3.4",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
-    "tap": "^16.3.3",
     "tsd": "^0.33.0",
     "undici": "^7.0.0"
   },
