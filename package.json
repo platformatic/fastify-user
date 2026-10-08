@@ -16,6 +16,14 @@
     "jwt",
     "webhook"
   ],
+  "homepage": "https://github.com/platformatic/fastify-user",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/platformatic/fastify-user.git"
+  },
+  "bugs": {
+    "url": "https://github.com/platformatic/fastify-user/issues"
+  },
   "author": "Marco Piraccini <marco.piraccini@gmail.com>",
   "license": "MIT",
   "engines": {
