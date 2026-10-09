@@ -1,0 +1,57 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number or patch, minor, major'
+        required: true
+        type: string
+      prerelease:
+        description: 'Release as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release-npm:
+    runs-on: ubuntu-latest
+    environment: main
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm test
+      - name: Bump version
+        id: bump
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          npm version "$RELEASE_VERSION" -m "Bumped v%s"
+          version=$(node -p "require('./package.json').version")
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - name: Push changes
+        run: git push --follow-tags origin "HEAD:$GITHUB_REF"
+      - name: Update npm
+        run: npm install -g npm@11.16.0
+      - name: Publish to npm
+        run: npm publish --access public --provenance --tag ${{ inputs.prerelease == true && 'next' || 'latest' }}
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          RELEASE_VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          if [ "$PRERELEASE" = 'true' ]; then
+            gh release create "v$RELEASE_VERSION" --generate-notes --prerelease
+          else
+            gh release create "v$RELEASE_VERSION" --generate-notes --latest
+          fi
