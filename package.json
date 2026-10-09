@@ -49,5 +49,10 @@
   },
   "tsd": {
     "directory": "test/types"
-  }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib"
+  ]
 }
