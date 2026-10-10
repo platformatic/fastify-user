@@ -33,17 +33,26 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          npm version "$RELEASE_VERSION" -m "Bumped v%s"
+          current=$(node -p "require('./package.json').version")
+          if [ "$current" = "${RELEASE_VERSION#v}" ]; then
+            # A previous run already pushed this bump but failed to publish
+            printf 'package.json is already at %s, skipping bump\n' "$current"
+            printf 'bumped=false\n' >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "$GITHUB_ACTOR"
+            git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+            npm version "$RELEASE_VERSION" -m "Bumped v%s"
+            printf 'bumped=true\n' >> "$GITHUB_OUTPUT"
+          fi
           version=$(node -p "require('./package.json').version")
           printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
       - name: Push changes
+        if: ${{ steps.bump.outputs.bumped == 'true' }}
         run: git push --follow-tags origin "HEAD:$GITHUB_REF"
       - name: Update npm
         run: npm install -g npm@11.16.0
       - name: Publish to npm
-        run: npm publish --access public --provenance --tag ${{ inputs.prerelease == true && 'next' || 'latest' }}
+        run: npm publish --access public --provenance --loglevel verbose --tag ${{ inputs.prerelease == true && 'next' || 'latest' }}
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
