@@ -51,8 +51,10 @@ jobs:
         run: git push --follow-tags origin "HEAD:$GITHUB_REF"
       - name: Update npm
         run: npm install -g npm@11.16.0
-      - name: Publish to npm
-        run: npm publish --access public --provenance --loglevel verbose --tag ${{ inputs.prerelease == true && 'next' || 'latest' }}
+      # The npm trusted publisher only grants "npm stage publish": the version is staged here
+      # and a maintainer approves it afterwards with `npm stage approve <stage-id>`.
+      - name: Stage publish to npm
+        run: npm stage publish --access public --provenance --loglevel verbose --tag ${{ inputs.prerelease == true && 'next' || 'latest' }}
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
