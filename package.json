@@ -39,7 +39,7 @@
   "devDependencies": {
     "@fastify/cookie": "^11.0.0",
     "@fastify/session": "^11.0.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.0.0",
     "borp": "^1.0.0",
     "fast-jwt": "^6.3.4",
     "snazzy": "^9.0.0",
